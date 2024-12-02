@@ -1,0 +1,27 @@
+{
+  "os":  "macOS-15.1-arm64-arm-64bit",
+  "python":  "3.11.0",
+  "startedAt":  "2024-12-02T16:24:45.484426Z",
+  "args":  [
+    "--model-path",
+    "models/custom_model.pth",
+    "--train-csv",
+    "data/processed/train.csv",
+    "--root-dir",
+    "data/raw",
+    "--batch-size",
+    "64",
+    "--epochs",
+    "15",
+    "--learning-rate",
+    "0.0005",
+    "--wandb-project",
+    "my-custom-training"
+  ],
+  "program":  "-m fashion_meter_module.modeling.train",
+  "email":  "ramusdmitry@gmail.com",
+  "root":  "/Users/dimko/dl-fm/fashion_meter_repo",
+  "host":  "Noutbuk-Dmitriy.local",
+  "username":  "dimko",
+  "executable":  "/Users/dimko/dl-fm/fashion_meter_repo/.venv/bin/python"
+}
