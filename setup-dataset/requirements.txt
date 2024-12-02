@@ -1,0 +1,10 @@
+PIL
+io
+numpy
+rembg
+selenium
+selenium.webdriver.chrome.service
+selenium.webdriver.common.by
+tabulate
+tqdm
+webdriver_manager.chrome
