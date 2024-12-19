@@ -1,16 +1,4 @@
-black
-flake8
-ipython
-isort
-jupyterlab
-loguru
-matplotlib
-notebook
-numpy
-pandas
-pip
-python-dotenv
-scikit-learn
-tqdm
-typer
--e .
+Pillow==11.0.0
+streamlit==1.41.1
+torch==2.5.0
+torchvision==0.20.0
