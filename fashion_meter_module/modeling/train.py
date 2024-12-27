@@ -1,14 +1,16 @@
 import time
 from pathlib import Path
+from typing import Literal
+
 import torch
 from loguru import logger
 from tqdm import tqdm
 import typer
 
-from fashion_meter_module.config import MODELS_DIR, PROCESSED_DATA_DIR, DEVICE, TEST_CSV
+from fashion_meter_module.config import MODELS_DIR, PROCESSED_DATA_DIR, DEVICE, TEST_CSV, EPOCHS, LEARNING_RATE
 from fashion_meter_module.evaluate import evaluate_model
 from fashion_meter_module.model import create_custom_model
-from fashion_meter_module.dataset import collate_fn, SafeDataset
+from fashion_meter_module.dataset import collate_fn, SafeDataset, get_transforms, get_dataloaders
 from fashion_meter_module.config import TRAIN_CSV, ROOT_DIR, BATCH_SIZE
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -18,7 +20,7 @@ app = typer.Typer()
 import wandb
 from torchvision.transforms import ColorJitter, RandomResizedCrop, RandomHorizontalFlip, RandomRotation, ToTensor, Normalize
 
-def train_model(model, train_loader, optimizer, criterion, device, epochs, batch_size, learning_rate):
+def train_model(model, train_loader, test_loader, optimizer, criterion, device, epochs, batch_size, learning_rate):
     """
     Функция для обучения модели.
     """
@@ -54,19 +56,33 @@ def train_model(model, train_loader, optimizer, criterion, device, epochs, batch
         logger.info(f"Epoch {epoch + 1}/{epochs} completed. Loss: {avg_loss:.4f}")
         wandb.log({"epoch": epoch + 1, "loss": avg_loss})
 
-    # wandb_logs.finish()
+        # Оценка модели на тестовом наборе
+        accuracy, report = evaluate_model(model, test_loader, test_loader.dataset.classes, device)
+        logger.info(f"Epoch {epoch + 1}/{epochs} - Test Accuracy: {accuracy:.2f}%")
+        logger.info(f"Classification Report:\n{report}")
+
+        # Логирование в WandB
+        wandb.log({
+            "epoch": epoch + 1,
+            "loss": avg_loss,
+            "test_accuracy": accuracy,
+            "classification_report": report,
+        })
+
+    # wandb.finish()
 
 
 @app.command()
 def main(
-    model_path: Path = MODELS_DIR / "custom_model.pth",
+    model_path: Path = MODELS_DIR / f"custom_model_resnet18_{time.time_ns()}.pth",
     train_csv: Path = TRAIN_CSV,
     test_csv: Path = TEST_CSV,
     root_dir: Path = ROOT_DIR,  # Корневая директория с изображениями
-    batch_size: int = BATCH_SIZE,
-    epochs: int = 10,
-    learning_rate: float = 0.001,
+    batch_size: int = BATCH_SIZE, # 64
+    epochs: int = EPOCHS, # 10
+    learning_rate: float = LEARNING_RATE,
     wandb_project: str = "custom-dataset-training-and-benchmark",
+    aug_mode: str = Literal['basic', 'basic+', 'best']
 ):
     """
     Запуск обучения модели.
@@ -79,31 +95,12 @@ def main(
     wandb.init(project=wandb_project, name=f"custom_model_run-{timestamp}")
 
     # === Подготовка данных ===
-    transform_train = transforms.Compose([
-        RandomResizedCrop(32),
-        RandomHorizontalFlip(),
-        RandomRotation(10),
-        ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-        ToTensor(),
-        Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    ])
-
-    transform_test = transforms.Compose([
-        transforms.Resize((32, 32)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    ])
-
-
+    transform_train, transform_test = get_transforms(aug_mode)
 
     train_dataset = SafeDataset(train_csv, root_dir, transform=transform_train)
     test_dataset = SafeDataset(test_csv, ROOT_DIR, transform=transform_test)
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=2, collate_fn=collate_fn
-    )
-    test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False, num_workers=2, collate_fn=collate_fn
-    )
+
+    train_loader, test_loader = get_dataloaders(train_dataset, test_dataset, batch_size)
 
     # === Подготовка модели ===
     model = create_custom_model(len(train_dataset.classes))
@@ -114,7 +111,7 @@ def main(
     criterion = torch.nn.CrossEntropyLoss()
 
     # === Обучение ===
-    train_model(model, train_loader, optimizer, criterion, DEVICE, epochs, batch_size, learning_rate)
+    train_model(model, train_loader, test_loader, optimizer, criterion, DEVICE, epochs, batch_size, learning_rate)
 
     # Оценка модели
     logger.info("Evaluating model performance...")

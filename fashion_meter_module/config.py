@@ -37,9 +37,13 @@ LEARNING_RATE = 0.001
 DEVICE = my_device()
 
 # === Пути ===
-TRAIN_CSV = RAW_DATA_DIR / "train.csv"
-TEST_CSV = RAW_DATA_DIR / "test.csv"
-ROOT_DIR = RAW_DATA_DIR
+RAW_TRAIN_CSV = RAW_DATA_DIR / "train.csv"
+RAW_TEST_CSV = RAW_DATA_DIR / "test.csv"
+RAW_ROOT_DIR = RAW_DATA_DIR
+
+TRAIN_CSV = PROCESSED_DATA_DIR / "train.csv"
+TEST_CSV = PROCESSED_DATA_DIR / "test.csv"
+ROOT_DIR = PROCESSED_DATA_DIR
 
 # If tqdm is installed, configure loguru with tqdm.write
 # https://github.com/Delgan/loguru/issues/135

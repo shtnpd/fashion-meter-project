@@ -1,11 +1,15 @@
 from pathlib import Path
 import os
+from typing import Literal
+
 import pandas as pd
 from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from loguru import logger
+from torchvision.transforms.v2 import RandomResizedCrop, RandomHorizontalFlip, RandomRotation, ColorJitter, ToTensor, \
+    Normalize
 from tqdm import tqdm
 import typer
 
@@ -67,47 +71,80 @@ def collate_fn(batch):
 
 
 # === Get Transforms ===
-def get_transforms():
-    transform_train = transforms.Compose([
-        transforms.Resize((32, 32)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(10),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
+def get_transforms(mode: str = 'basic+'):
+    logger.info(f"Аугментация - {mode}")
+    if mode == 'basic+':
+        transform_train = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
 
-    transform_test = transforms.Compose([
-        transforms.Resize((32, 32)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
+        transform_test = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+
+    elif mode == 'best':
+        transform_train = transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.ColorJitter(brightness=0.2,
+                                   contrast=0.2,
+                                   saturation=0.2,
+                                   hue=0.1),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5),
+                                 (0.5, 0.5, 0.5))
+        ])
+
+        transform_test = transforms.Compose([
+            transforms.Resize((224, 224)),  # <-- Или тоже RandomResizedCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5),
+                                 (0.5, 0.5, 0.5))
+        ])
+    else:
+        transform_train = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+
+        transform_test = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
 
     return transform_train, transform_test
 
 
-# # === Get DataLoaders ===
-# def get_dataloaders(train_csv, test_csv, root_dir, batch_size):
-#     transform_train, transform_test = get_transforms()
-#     train_dataset = SafeDataset(train_csv, root_dir, transform=transform_train)
-#     test_dataset = SafeDataset(test_csv, root_dir, transform=transform_test)
-#
-#     train_loader = DataLoader(
-#         train_dataset,
-#         batch_size=batch_size,
-#         shuffle=True,
-#         num_workers=0,
-#         collate_fn=collate_fn,
-#     )
-#
-#     test_loader = DataLoader(
-#         test_dataset,
-#         batch_size=batch_size,
-#         shuffle=False,
-#         num_workers=0,
-#         collate_fn=collate_fn,
-#     )
-#
-#     return train_loader, test_loader
+# === Get DataLoaders ===
+def get_dataloaders(train_dataset, test_dataset, batch_size):
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=2,
+        collate_fn=collate_fn,
+    )
+
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=2,
+        collate_fn=collate_fn,
+    )
+
+    return train_loader, test_loader
 
 
 # === CLI Commands ===

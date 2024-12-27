@@ -12,43 +12,46 @@ A short description of the project.
 
 Preprocess dataset before training via command:
 
-train data
+### Prepare dataset
+
+```shell
+python data/raw/test-train.py
+```
 
 ```sh
+
 python -m fashion_meter_module.dataset process-raw-dataset \
     --input-csv data/raw/train.csv \
     --output-csv data/processed/train.csv
 ```
-
-test data
-
 ```sh
+
 python -m fashion_meter_module.dataset process-raw-dataset \
     --input-csv data/raw/test.csv \
     --output-csv data/processed/test.csv
 ```
 
-Start training via command:
+### Start training
 
 ```sh
 python -m fashion_meter_module.modeling.train \
-    --model-path models/custom_model.pth \
+    --model-path models/custom_model_resnet18.pth \
     --train-csv data/processed/train.csv \
-    --root-dir data/raw \
+    --root-dir data/processed \
     --batch-size 64 \
     --epochs 15 \
     --learning-rate 0.0005 \
-    --wandb-project "my-custom-training"
+    --wandb-project "resnet18-custom-dataset"
 ```
 
-Use benchmark
+### Use benchmarks
 
 ```sh
-python -m fashion_meter_module.modeling.benchmark \         
-    --test-csv data/processed/test.csv \
-    --root-dir data/processed \          
-    --batch-size 64
-    --models resnet18,resnet50,resnet101 # use if you want bench with different models
+python -m fashion_meter_module.modeling.benchmark 
+    --test-csv data/processed/test.csv 
+    --root-dir data/processed 
+    --batch-size 64 
+    --models resnet18,resnet50,resnet101
 ```
 
 ## Project Organization
