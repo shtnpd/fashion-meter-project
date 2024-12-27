@@ -16,7 +16,7 @@ from torchvision import transforms
 app = typer.Typer()
 
 import wandb
-
+from torchvision.transforms import ColorJitter, RandomResizedCrop, RandomHorizontalFlip, RandomRotation, ToTensor, Normalize
 
 def train_model(model, train_loader, optimizer, criterion, device, epochs, batch_size, learning_rate):
     """
@@ -54,7 +54,7 @@ def train_model(model, train_loader, optimizer, criterion, device, epochs, batch
         logger.info(f"Epoch {epoch + 1}/{epochs} completed. Loss: {avg_loss:.4f}")
         wandb.log({"epoch": epoch + 1, "loss": avg_loss})
 
-    # wandb.finish()
+    # wandb_logs.finish()
 
 
 @app.command()
@@ -75,21 +75,26 @@ def main(
 
     # === Логирование W&B ===
     timestamp = time.strftime("%Y-%m-%d_%H:%M:%S")
+
     wandb.init(project=wandb_project, name=f"custom_model_run-{timestamp}")
 
     # === Подготовка данных ===
     transform_train = transforms.Compose([
-        transforms.Resize((32, 32)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(10),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        RandomResizedCrop(32),
+        RandomHorizontalFlip(),
+        RandomRotation(10),
+        ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+        ToTensor(),
+        Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
+
     transform_test = transforms.Compose([
         transforms.Resize((32, 32)),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
+
+
 
     train_dataset = SafeDataset(train_csv, root_dir, transform=transform_train)
     test_dataset = SafeDataset(test_csv, ROOT_DIR, transform=transform_test)

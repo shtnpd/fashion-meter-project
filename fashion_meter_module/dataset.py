@@ -28,16 +28,20 @@ class SafeDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
         folder, filename = row['folder'], row['filename']
-        folder_with_suffix = f"{folder}-clean-rescaled"
-        img_path = os.path.join(self.root_dir, folder_with_suffix, filename)
+
+        # Формируем путь к изображению
+        img_path = os.path.join(self.root_dir, filename)
 
         if not os.path.exists(img_path):
             logger.warning(f"Файл {img_path} не найден. Пропуск.")
             return None
 
+        # Открываем и преобразуем изображение
         image = Image.open(img_path).convert("RGB")
         if self.transform:
             image = self.transform(image)
+
+        # Получаем метку класса
         label = self.class_to_idx[folder]
         return image, label
 
@@ -81,29 +85,29 @@ def get_transforms():
     return transform_train, transform_test
 
 
-# === Get DataLoaders ===
-def get_dataloaders(train_csv, test_csv, root_dir, batch_size):
-    transform_train, transform_test = get_transforms()
-    train_dataset = SafeDataset(train_csv, root_dir, transform=transform_train)
-    test_dataset = SafeDataset(test_csv, root_dir, transform=transform_test)
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=0,
-        collate_fn=collate_fn,
-    )
-
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        collate_fn=collate_fn,
-    )
-
-    return train_loader, test_loader
+# # === Get DataLoaders ===
+# def get_dataloaders(train_csv, test_csv, root_dir, batch_size):
+#     transform_train, transform_test = get_transforms()
+#     train_dataset = SafeDataset(train_csv, root_dir, transform=transform_train)
+#     test_dataset = SafeDataset(test_csv, root_dir, transform=transform_test)
+#
+#     train_loader = DataLoader(
+#         train_dataset,
+#         batch_size=batch_size,
+#         shuffle=True,
+#         num_workers=0,
+#         collate_fn=collate_fn,
+#     )
+#
+#     test_loader = DataLoader(
+#         test_dataset,
+#         batch_size=batch_size,
+#         shuffle=False,
+#         num_workers=0,
+#         collate_fn=collate_fn,
+#     )
+#
+#     return train_loader, test_loader
 
 
 # === CLI Commands ===
@@ -135,7 +139,7 @@ def check_dataset_integrity(
 @app.command()
 def process_raw_dataset(
     input_csv: Path = RAW_DATA_DIR / "train.csv",
-    output_csv: Path = PROCESSED_DATA_DIR / "processed_train.csv",
+    output_csv: Path = PROCESSED_DATA_DIR / "train.csv",
 ):
     logger.info(f"Обработка датасета {input_csv}")
     data = pd.read_csv(input_csv)
