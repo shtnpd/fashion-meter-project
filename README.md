@@ -1,4 +1,4 @@
-# fashion_meter
+# Fashion Meter App
 
 by Polina Ishutina and Dmitriy Ramus
 
