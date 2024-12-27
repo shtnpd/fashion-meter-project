@@ -1,12 +1,39 @@
 # fashion_meter
 
-by Dmitriy Ramus and Polina Ishutina
+by Polina Ishutina and Dmitriy Ramus
 
 <a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-A short description of the project.
+![image](https://github.com/user-attachments/assets/92579023-d94a-4679-b9ef-b08bd9d40339)
+Welcome to Fashion Meter, a project dedicated to making AI as stylish as your wardrobe! 👗👚👠
+
+This project is an exploration of machine learning in the world of fashion, where we teach a neural network to classify fashion images into distinct styles. Whether you're a Cottagecore enthusiast, a fan of Y2K, or you just love some Academia chic, Fashion Meter can help you identify your next outfit trend with just a glance.
+
+Fashion Meter uses cutting-edge Deep Learning models to analyze fashion images, and based on their content, it predicts which style category the image belongs to.
+
+Here’s how it works:
+
+**The Workflow**:
+-- Data Preprocessing: We start with a raw dataset of fashion images (because raw fashion is the best, right?). The images are carefully organized into categories like Academia, Alt, Cottagecore, and Y2K.
+-- Model Training: We feed these images into our custom-trained deep learning model, where it learns to recognize different fashion styles. Each epoch takes the model one step closer to understanding what makes each style unique.
+-- Evaluation: After training, we evaluate the model’s performance and check how well it predicts which category an image belongs to. Spoiler: It does an amazing job at it.
+-- Fashion Predictions: With a trained model in hand, you can now upload your favorite fashion images and get them classified into their rightful fashion styles!
+
+**Why You Should Care**:
+-- Perfect for fashion enthusiasts: Want to know which style is "hot" this season? This model can help!
+-- Great for data science learners: Whether you're just starting out with machine learning or you're deep into the world of neural networks, this project has something to offer.
+-- Fun & Practical: Because who doesn't love a bit of fashion AI fun?
+
+**Features:**
+-- Custom dataset of fashion images sorted by style.
+-- Powerful neural network model that learns to classify images into fashion categories.
+-- Integration with Google Colab and WandB for smooth experimentation and visualization.
+--Easy-to-understand code and notebooks, ready for you to clone and run on your own.
+
+
+So, why not give it a try? Dive into the world of Fashion Meter and let’s see if AI can predict the next big trend before anyone else does! 🚀
 
 ## Steps
 
